@@ -17,9 +17,7 @@ type Article struct {
 func ScrapFirst() {
 	url := "https://www.scrapethissite.com/pages/"
 	var articles []Article
-
-	// set proxy if needed
-
+	// TODO set proxy if needed
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.scrapethissite.com"),
 	)
@@ -34,7 +32,7 @@ func ScrapFirst() {
 	})
 
 	c.OnResponse(func(r *colly.Response) {
-		fmt.Printf("Visited: %s, status code: %d ", r.Request.URL, r.StatusCode)
+		fmt.Printf("Visited: %s, status code: %d \n", r.Request.URL, r.StatusCode)
 	})
 
 	c.OnScraped(func(r *colly.Response) {
@@ -90,6 +88,10 @@ func ScrapSecond() {
 
 		products = append(products, product)
 
+	})
+
+	c.OnResponse(func(r *colly.Response) {
+		fmt.Printf("Visited: %s, status code: %d \n", r.Request.URL, r.StatusCode)
 	})
 
 	c.OnScraped(func(r *colly.Response) {

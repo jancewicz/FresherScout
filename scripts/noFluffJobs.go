@@ -2,6 +2,7 @@ package scripts
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
 
@@ -29,6 +30,10 @@ func ScrapNoFluffJobs() {
 		data.Position = e.Text
 
 		noFluffJobsOffers = append(noFluffJobsOffers, data)
+	})
+
+	c.OnResponse(func(r *colly.Response) {
+		fmt.Printf("Visited: %s, status code: %d ", r.Request.URL, r.StatusCode)
 	})
 
 	c.OnScraped(func(r *colly.Response) {

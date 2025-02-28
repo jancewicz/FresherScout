@@ -9,9 +9,7 @@ import (
 
 func main() {
 	fmt.Println("Lets GO scout!")
-
 	var wg sync.WaitGroup
-
 	wg.Add(2)
 
 	go func() {
