@@ -21,14 +21,14 @@ func main() {
 	var articles []Article
 
 	c := colly.NewCollector(
-		colly.AllowedDomains(url),
+		colly.AllowedDomains("www.scrapethissite.com"),
 	)
 
 	c.OnHTML("div.page", func(e *colly.HTMLElement) {
 		article := Article{}
 
 		article.Title = e.ChildText(".page-title")
-		article.Content = e.ChildText(".lead session-desc")
+		article.Content = e.ChildText(".lead.session-desc")
 
 		articles = append(articles, article)
 	})
@@ -59,5 +59,8 @@ func main() {
 		defer writer.Flush()
 	})
 
-	c.Visit(url)
+	err := c.Visit(url)
+	if err != nil {
+		log.Fatal("Cannot visit site", err)
+	}
 }
