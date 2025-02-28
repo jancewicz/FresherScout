@@ -2,6 +2,7 @@ package scrapp
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
 
@@ -30,6 +31,10 @@ func ScrapFirst() {
 		article.Content = e.ChildText(".lead.session-desc")
 
 		articles = append(articles, article)
+	})
+
+	c.OnResponse(func(r *colly.Response) {
+		fmt.Printf("Visited: %s, status code: %d ", r.Request.URL, r.StatusCode)
 	})
 
 	c.OnScraped(func(r *colly.Response) {
