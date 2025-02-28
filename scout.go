@@ -1,66 +1,29 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
-	"log"
-	"os"
+	"sync"
 
-	"github.com/gocolly/colly"
+	scrapp "github.com/jancewicz/FresherScout/testScripts"
 )
-
-type Article struct {
-	Title,
-	Content string
-}
 
 func main() {
 	fmt.Println("Lets GO scout!")
 
-	url := "https://www.scrapethissite.com/pages/"
-	var articles []Article
+	var wg sync.WaitGroup
 
-	c := colly.NewCollector(
-		colly.AllowedDomains("www.scrapethissite.com"),
-	)
+	wg.Add(2)
 
-	c.OnHTML("div.page", func(e *colly.HTMLElement) {
-		article := Article{}
+	go func() {
+		defer wg.Done()
+		scrapp.ScrapFirst()
+	}()
 
-		article.Title = e.ChildText(".page-title")
-		article.Content = e.ChildText(".lead.session-desc")
+	go func() {
+		defer wg.Done()
+		scrapp.ScrapSecond()
+	}()
 
-		articles = append(articles, article)
-	})
-
-	c.OnScraped(func(r *colly.Response) {
-		file, err := os.Create("articles.csv")
-		if err != nil {
-			log.Fatal("Cannot create file", err)
-		}
-		defer file.Close()
-
-		writer := csv.NewWriter(file)
-
-		headers := []string{
-			"Title",
-			"Content",
-		}
-		writer.Write(headers)
-
-		for _, article := range articles {
-			articleSlice := []string{
-				article.Title,
-				article.Content,
-			}
-
-			writer.Write(articleSlice)
-		}
-		defer writer.Flush()
-	})
-
-	err := c.Visit(url)
-	if err != nil {
-		log.Fatal("Cannot visit site", err)
-	}
+	wg.Wait()
+	fmt.Println("Scouting done!")
 }
