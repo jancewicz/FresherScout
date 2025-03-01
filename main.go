@@ -2,26 +2,25 @@ package main
 
 import (
 	"fmt"
-	"sync"
 
-	scrapp "github.com/jancewicz/FresherScout/testScripts"
+	"github.com/jancewicz/FresherScout/scripts"
 )
 
 func main() {
 	fmt.Println("Lets GO scout!")
-	var wg sync.WaitGroup
-	wg.Add(2)
+	htmlPathChan := make(chan string)
+	scrapDoneChan := make(chan struct{})
 
-	go func() {
-		defer wg.Done()
-		scrapp.ScrapFirst()
-	}()
+	// reads data from map for each platform
+	for key, val := range dataMap {
+		go ScrapPage(key, val.Url, htmlPathChan)
 
-	go func() {
-		defer wg.Done()
-		scrapp.ScrapSecond()
-	}()
+		htmlFilePath := <-htmlPathChan
 
-	wg.Wait()
+		go scripts.ScrapNFJHTML(htmlFilePath, scrapDoneChan)
+		<-scrapDoneChan
+		fmt.Printf("Scrapping file: %s completed\n", htmlFilePath)
+	}
+
 	fmt.Println("Scouting done!")
 }

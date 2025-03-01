@@ -1,0 +1,100 @@
+package main
+
+import (
+	"encoding/csv"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
+
+	"github.com/joho/godotenv"
+)
+
+type PageDetails struct {
+	Url         string
+	CSSselector string
+	Directory   string
+}
+
+var dataMap = map[string]PageDetails{
+	"noFluffJobs": {
+		Url:         "https://nofluffjobs.com/pl/Golang",
+		CSSselector: ".posting-title__position.ng-star-inserted",
+		Directory:   "files/noFluffJobs",
+	},
+}
+
+//	 Using scrapingBee api function encodes page addres and save its HTML to separate directory
+//		name: name of scrapped page, needed for directories and files creation
+//		addr: address of scrapped page
+func ScrapPage(name, addr string, c chan string) {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error occured during .env file loading")
+	}
+	apiKey := os.Getenv("API_KEY")
+	encodedUrl := url.QueryEscape(addr)
+
+	client := http.Client{}
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://app.scrapingbee.com/api/v1/?api_key=%s&url=%s", apiKey, encodedUrl), nil)
+	if err != nil {
+		log.Fatalf("error occured during request creation: %v", err)
+	}
+
+	parseFormErr := req.ParseForm()
+	if parseFormErr != nil {
+		log.Fatalf("error occured during form parsing: %v", parseFormErr)
+	}
+
+	response, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("error occured during request: %v", err)
+	}
+
+	responseBody, _ := io.ReadAll(response.Body)
+
+	file, err := os.Create(fmt.Sprintf("files/%s/%s.html", name, name))
+	if err != nil {
+		log.Fatal("Cannot create file", err)
+	}
+	defer file.Close()
+	file.Write(responseBody)
+
+	defer response.Body.Close()
+
+	c <- fmt.Sprintf("files/%s/%s.html", name, name)
+}
+
+func CheckPositions(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		fmt.Println("file does not exist")
+		return false
+	} else {
+		file, err := os.Open(path)
+		if err != nil {
+			log.Fatal("Cannot open file", err)
+		}
+		defer file.Close()
+
+		csvReader := csv.NewReader(file)
+		data, err := csvReader.ReadAll()
+		if err != nil {
+			log.Fatal("Cannot read file", err)
+		}
+
+		for _, row := range data {
+			for _, col := range row {
+				if strings.Contains(col, "Junior") || strings.Contains(col, "junior") || strings.Contains(col, "trainee") || strings.Contains(col, "Trainee") {
+					fmt.Println("Junior position found")
+					return true
+				}
+			}
+		}
+	}
+	fmt.Println("Cannot find junior position")
+	return false
+}
