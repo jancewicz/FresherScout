@@ -13,18 +13,12 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var jobPoistions = []string{"Junior", "junior", "Trainee", "trainee", "Intern", "intern"}
+
 type PageDetails struct {
 	Url         string
 	CSSselector string
 	Directory   string
-}
-
-var dataMap = map[string]PageDetails{
-	"noFluffJobs": {
-		Url:         "https://nofluffjobs.com/pl/Golang",
-		CSSselector: ".posting-title__position.ng-star-inserted",
-		Directory:   "files/noFluffJobs",
-	},
 }
 
 //	 Using scrapingBee api function encodes page addres and save its HTML to separate directory
@@ -56,10 +50,13 @@ func ScrapPage(name, addr string, c chan string) {
 	}
 
 	responseBody, _ := io.ReadAll(response.Body)
+	dirPath := fmt.Sprintf("files/%s", name)
+	os.MkdirAll(dirPath, os.ModePerm)
 
 	file, err := os.Create(fmt.Sprintf("files/%s/%s.html", name, name))
 	if err != nil {
-		log.Fatal("Cannot create file", err)
+		fmt.Println("Cannot create file", err)
+		return
 	}
 	defer file.Close()
 	file.Write(responseBody)
@@ -73,28 +70,38 @@ func CheckPositions(path string) bool {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		fmt.Println("file does not exist")
 		return false
-	} else {
-		file, err := os.Open(path)
-		if err != nil {
-			log.Fatal("Cannot open file", err)
-		}
-		defer file.Close()
+	}
 
-		csvReader := csv.NewReader(file)
-		data, err := csvReader.ReadAll()
-		if err != nil {
-			log.Fatal("Cannot read file", err)
-		}
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Cannot open file", err)
+		return false
+	}
+	defer file.Close()
 
-		for _, row := range data {
-			for _, col := range row {
-				if strings.Contains(col, "Junior") || strings.Contains(col, "junior") || strings.Contains(col, "trainee") || strings.Contains(col, "Trainee") {
-					fmt.Println("Junior position found")
-					return true
-				}
-			}
+	csvReader := csv.NewReader(file)
+	data, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal("Cannot read file", err)
+	}
+
+	for _, row := range data {
+		flatRow := strings.Join(row, " ")
+		if containAny(flatRow, jobPoistions) {
+			fmt.Println("Job position found!")
+			return true
 		}
 	}
+
 	fmt.Println("Cannot find junior position")
+	return false
+}
+
+func containAny(line string, positions []string) bool {
+	for _, position := range positions {
+		if strings.Contains(line, position) {
+			return true
+		}
+	}
 	return false
 }
