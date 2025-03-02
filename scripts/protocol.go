@@ -40,6 +40,7 @@ func ScrapProtocol(path string, done chan struct{}) {
 		fmt.Println("Cannot create file", err)
 		return
 	}
+	defer csvFile.Close()
 
 	if err := WriteListingsToCSV(protocolListings, csvFile); err != nil {
 		fmt.Println("error during appending data to csv file: ", err)
