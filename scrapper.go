@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -27,7 +26,8 @@ type PageDetails struct {
 func ScrapPage(name, addr string, c chan string) {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("error occured during .env file loading")
+		fmt.Println("error occured during .env file loading")
+		return
 	}
 	apiKey := os.Getenv("API_KEY")
 	encodedUrl := url.QueryEscape(addr)
@@ -36,17 +36,19 @@ func ScrapPage(name, addr string, c chan string) {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://app.scrapingbee.com/api/v1/?api_key=%s&url=%s", apiKey, encodedUrl), nil)
 	if err != nil {
-		log.Fatalf("error occured during request creation: %v", err)
+		fmt.Printf("error occured during request creation: %v", err)
 	}
 
 	parseFormErr := req.ParseForm()
 	if parseFormErr != nil {
-		log.Fatalf("error occured during form parsing: %v", parseFormErr)
+		fmt.Printf("error occured during form parsing: %v", parseFormErr)
+		return
 	}
 
 	response, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("error occured during request: %v", err)
+		fmt.Printf("error occured during request: %v", err)
+		return
 	}
 
 	responseBody, _ := io.ReadAll(response.Body)
@@ -82,7 +84,8 @@ func CheckPositions(path string) bool {
 	csvReader := csv.NewReader(file)
 	data, err := csvReader.ReadAll()
 	if err != nil {
-		log.Fatal("Cannot read file", err)
+		fmt.Println("Cannot read file", err)
+		return false
 	}
 
 	for _, row := range data {
