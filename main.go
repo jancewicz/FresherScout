@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/jancewicz/FresherScout/scripts"
@@ -9,21 +10,16 @@ import (
 
 var dataMap = map[string]PageDetails{
 	"noFluffJobs": {
-		Url:         "https://nofluffjobs.com/pl/Golang",
-		CSSselector: ".posting-title__position.ng-star-inserted",
+		Url: "https://nofluffjobs.com/pl/Golang",
 	},
 	"protocolIT": {
-		Url:         "https://theprotocol.it/praca?kw=golang",
-		CSSselector: "#offer-title",
+		Url: "https://theprotocol.it/praca?kw=golang",
 	},
 }
 
 func main() {
 	var wg sync.WaitGroup
-	wg.Add(2)
-
 	htmlPathChan := make(chan string)
-	scrapDoneChan := make(chan struct{})
 
 	fmt.Println("Lets GO scout!")
 
@@ -31,7 +27,8 @@ func main() {
 		wg.Add(1)
 		go func(key, url string) {
 			defer wg.Done()
-			ScrapPage(key, url, htmlPathChan)
+			htmlPath := ScrapPage(key, url)
+			htmlPathChan <- htmlPath
 		}(key, val.Url)
 	}
 
@@ -41,23 +38,31 @@ func main() {
 		close(htmlPathChan)
 	}()
 
+	var processingWg sync.WaitGroup
+
 	for htmlFilePath := range htmlPathChan {
-		wg.Add(2)
+		processingWg.Add(1)
 
 		go func(path string) {
-			defer wg.Done()
-			scripts.ScrapNFJHTML(path, scrapDoneChan)
+			defer processingWg.Done()
+
+			switch {
+			case strings.Contains(path, "noFluffJobs"):
+				scripts.ScrapNFJHTML(path)
+				fmt.Printf("NFJ scraping completed for: %s\n", path)
+			case strings.Contains(path, "protocol"):
+				scripts.ScrapProtocol(path)
+				fmt.Printf("Protocol scraping completed for: %s\n", path)
+			default:
+				fmt.Printf("Unknown file : %s\n", path)
+			}
+
+			fmt.Printf("Completed processing file: %s\n", path)
 		}(htmlFilePath)
 
-		go func(path string) {
-			defer wg.Done()
-			scripts.ScrapProtocol(path, scrapDoneChan)
-		}(htmlFilePath)
-
-		<-scrapDoneChan
-		fmt.Printf("Scrapping file: %s completed\n", htmlFilePath)
+		fmt.Printf("Started processing file: %s\n", htmlFilePath)
 	}
 
-	wg.Wait()
+	processingWg.Wait()
 	fmt.Println("Scouting done!")
 }

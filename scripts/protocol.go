@@ -13,7 +13,7 @@ var protocolCSV = fmt.Sprintf("files/%s/%s.csv", protocolIT, protocolIT)
 
 var titleIDName = "#offer-title"
 
-func ScrapProtocol(path string, done chan struct{}) {
+func ScrapProtocol(path string) {
 	protocolListings := []ListingData{}
 
 	htmlFile, err := os.Open(path)
@@ -47,5 +47,4 @@ func ScrapProtocol(path string, done chan struct{}) {
 	}
 
 	defer csvFile.Close()
-	done <- struct{}{}
 }

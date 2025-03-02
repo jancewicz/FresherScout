@@ -23,11 +23,10 @@ type PageDetails struct {
 //	 Using scrapingBee api function encodes page addres and save its HTML to separate directory
 //		name: name of scrapped page, needed for directories and files creation
 //		addr: address of scrapped page
-func ScrapPage(name, addr string, c chan string) {
+func ScrapPage(name, addr string) string {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("error occured during .env file loading")
-		return
 	}
 	apiKey := os.Getenv("API_KEY")
 	encodedUrl := url.QueryEscape(addr)
@@ -42,13 +41,11 @@ func ScrapPage(name, addr string, c chan string) {
 	parseFormErr := req.ParseForm()
 	if parseFormErr != nil {
 		fmt.Printf("error occured during form parsing: %v", parseFormErr)
-		return
 	}
 
 	response, err := client.Do(req)
 	if err != nil {
 		fmt.Printf("error occured during request: %v", err)
-		return
 	}
 
 	responseBody, _ := io.ReadAll(response.Body)
@@ -58,14 +55,13 @@ func ScrapPage(name, addr string, c chan string) {
 	file, err := os.Create(fmt.Sprintf("files/%s/%s.html", name, name))
 	if err != nil {
 		fmt.Println("Cannot create file", err)
-		return
 	}
 	defer file.Close()
 	file.Write(responseBody)
 
 	defer response.Body.Close()
 
-	c <- fmt.Sprintf("files/%s/%s.html", name, name)
+	return fmt.Sprintf("files/%s/%s.html", name, name)
 }
 
 func CheckPositions(path string) bool {

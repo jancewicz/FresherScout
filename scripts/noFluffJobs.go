@@ -14,7 +14,7 @@ var nfjCSV = fmt.Sprintf("files/%s/%s.csv", noFluffJobs, noFluffJobs)
 var titleClassName = ".posting-title__position.ng-star-inserted" // CSS class for job name
 
 // Function scraps existing in 'files' directory HTML for NFJ platform. Then Saves results in CSV file.
-func ScrapNFJHTML(path string, done chan struct{}) {
+func ScrapNFJHTML(path string) {
 	var nfjListings = []ListingData{}
 
 	htmlFile, err := os.Open(path)
@@ -45,6 +45,4 @@ func ScrapNFJHTML(path string, done chan struct{}) {
 	if err := WriteListingsToCSV(nfjListings, csvFile); err != nil {
 		fmt.Println("error during appending data to csv file: ", err)
 	}
-
-	done <- struct{}{}
 }
