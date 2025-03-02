@@ -20,10 +20,15 @@ type PageDetails struct {
 	Directory   string
 }
 
+type FilePaths struct {
+	HTML string
+	CSV  string
+}
+
 //	 Using scrapingBee api function encodes page addres and save its HTML to separate directory
 //		name: name of scrapped page, needed for directories and files creation
 //		addr: address of scrapped page
-func ScrapPage(name, addr string) string {
+func ScrapPage(name, addr string) FilePaths {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("error occured during .env file loading")
@@ -61,7 +66,10 @@ func ScrapPage(name, addr string) string {
 
 	defer response.Body.Close()
 
-	return fmt.Sprintf("files/%s/%s.html", name, name)
+	return FilePaths{
+		HTML: fmt.Sprintf("files/%s/%s.html", name, name),
+		CSV:  fmt.Sprintf("files/%s/%s.csv", name, name),
+	}
 }
 
 func CheckPositions(path string) bool {

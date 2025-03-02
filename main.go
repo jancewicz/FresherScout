@@ -19,7 +19,7 @@ var dataMap = map[string]PageDetails{
 
 func main() {
 	var wg sync.WaitGroup
-	htmlPathChan := make(chan string)
+	htmlPathChan := make(chan FilePaths)
 
 	fmt.Println("Lets GO scout!")
 
@@ -43,21 +43,23 @@ func main() {
 	for htmlFilePath := range htmlPathChan {
 		processingWg.Add(1)
 
-		go func(path string) {
+		go func(paths FilePaths) {
 			defer processingWg.Done()
 
 			switch {
-			case strings.Contains(path, "noFluffJobs"):
-				scripts.ScrapNFJHTML(path)
-				fmt.Printf("NFJ scraping completed for: %s\n", path)
-			case strings.Contains(path, "protocol"):
-				scripts.ScrapProtocol(path)
-				fmt.Printf("Protocol scraping completed for: %s\n", path)
+			case strings.Contains(paths.HTML, "noFluffJobs"):
+				scripts.ScrapNFJHTML(paths.HTML)
+				fmt.Printf("NFJ scraping completed for: %s\n", paths.HTML)
+			case strings.Contains(paths.HTML, "protocol"):
+				scripts.ScrapProtocol(paths.HTML)
+				fmt.Printf("Protocol scraping completed for: %s\n", paths.HTML)
 			default:
-				fmt.Printf("Unknown file : %s\n", path)
+				fmt.Printf("Unknown file : %s\n", paths.HTML)
 			}
 
-			fmt.Printf("Completed processing file: %s\n", path)
+			fmt.Printf("Completed processing file: %s\n", paths.HTML)
+
+			CheckPositions(paths.CSV)
 		}(htmlFilePath)
 
 		fmt.Printf("Started processing file: %s\n", htmlFilePath)
@@ -65,4 +67,5 @@ func main() {
 
 	processingWg.Wait()
 	fmt.Println("Scouting done!")
+
 }
