@@ -25,4 +25,5 @@ go.work.sum
 .env
 
 files
+bin
 airflowDAGs/venv
