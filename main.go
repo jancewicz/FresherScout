@@ -15,6 +15,9 @@ var dataMap = map[string]PageDetails{
 	"protocolIT": {
 		Url: "https://theprotocol.it/praca?kw=golang",
 	},
+	"bulldogJobs": {
+		Url: "https://bulldogjob.pl/companies/jobs/s/skills,Go",
+	},
 }
 
 func main() {
@@ -53,6 +56,9 @@ func main() {
 			case strings.Contains(paths.HTML, "protocol"):
 				scripts.ScrapProtocol(paths.HTML)
 				fmt.Printf("Protocol scraping completed for: %s\n", paths.HTML)
+			case strings.Contains(paths.HTML, "bulldog"):
+				scripts.ScrapBulldogJobs(paths.HTML)
+				fmt.Printf("BulldogJobs scraping completed for: %s\n", paths.HTML)
 			default:
 				fmt.Printf("Unknown file : %s\n", paths.HTML)
 			}
@@ -67,5 +73,4 @@ func main() {
 
 	processingWg.Wait()
 	fmt.Println("Scouting done!")
-
 }
