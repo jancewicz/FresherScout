@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -71,13 +70,4 @@ func ScrapPage(name, addr string) FilePaths {
 		HTML: fmt.Sprintf("files/%s/%s.html", name, name),
 		CSV:  fmt.Sprintf("files/%s/%s.csv", name, name),
 	}
-}
-
-func containAny(line string, positions []string) bool {
-	for _, position := range positions {
-		if strings.Contains(line, position) {
-			return true
-		}
-	}
-	return false
 }
