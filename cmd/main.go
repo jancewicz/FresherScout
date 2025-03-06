@@ -51,21 +51,25 @@ func main() {
 
 			switch {
 			case strings.Contains(paths.HTML, "noFluffJobs"):
-				scripts.ScrapNFJHTML(paths.HTML)
+				if err := scripts.Execute(scripts.ScrapNFJHTML, paths.HTML, paths.CSV); err != nil {
+					fmt.Println("Error during scrapping noFluffJobs")
+				}
 				fmt.Printf("NFJ scraping completed for: %s\n", paths.HTML)
 			case strings.Contains(paths.HTML, "protocol"):
-				scripts.ScrapProtocol(paths.HTML)
+				if err := scripts.Execute(scripts.ScrapProtocol, paths.HTML, paths.CSV); err != nil {
+					fmt.Println("Error during scrapping noFluffJobs")
+				}
 				fmt.Printf("Protocol scraping completed for: %s\n", paths.HTML)
 			case strings.Contains(paths.HTML, "bulldog"):
-				scripts.ScrapBulldogJobs(paths.HTML)
+				if err := scripts.Execute(scripts.ScrapBulldogJobs, paths.HTML, paths.CSV); err != nil {
+					fmt.Println("Error during scrapping noFluffJobs")
+				}
 				fmt.Printf("BulldogJobs scraping completed for: %s\n", paths.HTML)
 			default:
 				fmt.Printf("Unknown file : %s\n", paths.HTML)
 			}
 
 			fmt.Printf("Completed processing file: %s\n", paths.HTML)
-
-			CheckPositions(paths.CSV)
 		}(htmlFilePath)
 
 		fmt.Printf("Started processing file: %s\n", htmlFilePath)

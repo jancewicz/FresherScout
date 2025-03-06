@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,8 +11,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var jobPoistions = []string{"Junior", "junior", "Trainee", "trainee", "Intern", "intern"}
-
 type PageDetails struct {
 	Url         string
 	CSSselector string
@@ -23,6 +20,10 @@ type PageDetails struct {
 type FilePaths struct {
 	HTML string
 	CSV  string
+}
+
+func GenerateCSVPath(name string) string {
+	return fmt.Sprintf("files/%s/%s.csv", name, name)
 }
 
 //	 Using scrapingBee api function encodes page addres and save its HTML to separate directory
@@ -70,38 +71,6 @@ func ScrapPage(name, addr string) FilePaths {
 		HTML: fmt.Sprintf("files/%s/%s.html", name, name),
 		CSV:  fmt.Sprintf("files/%s/%s.csv", name, name),
 	}
-}
-
-func CheckPositions(path string) bool {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		fmt.Println("file does not exist")
-		return false
-	}
-
-	file, err := os.Open(path)
-	if err != nil {
-		fmt.Println("Cannot open file", err)
-		return false
-	}
-	defer file.Close()
-
-	csvReader := csv.NewReader(file)
-	data, err := csvReader.ReadAll()
-	if err != nil {
-		fmt.Println("Cannot read file", err)
-		return false
-	}
-
-	for _, row := range data {
-		flatRow := strings.Join(row, " ")
-		if containAny(flatRow, jobPoistions) {
-			fmt.Println("Job position found!")
-			return true
-		}
-	}
-
-	fmt.Println("Cannot find junior position")
-	return false
 }
 
 func containAny(line string, positions []string) bool {
