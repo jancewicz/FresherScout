@@ -84,8 +84,6 @@ func WriteContent(listings []ListingData, csvFile *os.File) error {
 	return nil
 }
 
-// WIP
-
 func CheckPositions(csvPath string) bool {
 	if _, err := os.Stat(csvPath); os.IsNotExist(err) {
 		fmt.Println("file does not exist")
