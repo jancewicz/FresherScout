@@ -1,4 +1,4 @@
-package scripts
+package scrapper
 
 import (
 	"fmt"

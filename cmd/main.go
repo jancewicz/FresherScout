@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/jancewicz/FresherScout/scripts"
+	scrapper "github.com/jancewicz/FresherScout/scrapper"
 )
 
 func main() {
@@ -13,7 +13,7 @@ func main() {
 
 	fmt.Println("Lets GO scout!")
 
-	for key, val := range scripts.DataMap {
+	for key, val := range scrapper.DataMap {
 		wg.Add(1)
 		go func(key, url string) {
 			defer wg.Done()
@@ -32,12 +32,12 @@ func main() {
 	for pageData := range pagaDataChan {
 		processingWg.Add(1)
 
-		selector := scripts.GetSelector(pageData.Name)
+		selector := scrapper.GetSelector(pageData.Name)
 
 		go func(data PageData) {
 			defer processingWg.Done()
 
-			if err := scripts.Execute(scripts.ScrapHTMLFile, data.HTML, data.Name, selector, data.CSV); err != nil {
+			if err := scrapper.Execute(scrapper.ScrapHTMLFile, data.HTML, data.Name, selector, data.CSV); err != nil {
 				fmt.Printf("Error during scrapping: %s, err: %v", data.Name, err)
 			}
 
