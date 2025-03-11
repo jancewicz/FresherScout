@@ -9,6 +9,38 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+type PageDetails struct {
+	Name         string
+	Url          string
+	CSSselectors CSSselectors
+	Directory    string
+}
+
+type CSSselectors struct {
+	JobTitle string
+}
+
+var DataMap = map[string]PageDetails{
+	"noFluffJobs": {
+		Url: "https://nofluffjobs.com/pl/Golang",
+		CSSselectors: CSSselectors{
+			JobTitle: ".posting-title__position.ng-star-inserted",
+		},
+	},
+	"protocolIT": {
+		Url: "https://theprotocol.it/praca?kw=golang",
+		CSSselectors: CSSselectors{
+			JobTitle: "#offer-title",
+		},
+	},
+	"bulldogJobs": {
+		Url: "https://bulldogjob.pl/companies/jobs/s/skills,Go",
+		CSSselectors: CSSselectors{
+			JobTitle: ".JobListItem_item__title__278xz",
+		},
+	},
+}
+
 var JobPoistions = []string{"Junior", "junior", "Trainee", "trainee", "Intern", "intern"}
 var JuniorJobsFound = []ListingData{}
 
@@ -21,8 +53,8 @@ var csvHeaders = []string{
 	"Position",
 }
 
-func Execute(scrapper func(htmlPath string) []ListingData, htmlPath, csvPath string) error {
-	listings := scrapper(htmlPath)
+func Execute(scrapper func(htmlPath, pageName, jobTitleSelector string) []ListingData, htmlPath, pageName, jobTitleSelector, csvPath string) error {
+	listings := scrapper(htmlPath, pageName, jobTitleSelector)
 
 	if err := SaveListings(csvPath, listings); err != nil {
 		return err
@@ -123,4 +155,13 @@ func ContainAny(line string, positions []string) bool {
 		}
 	}
 	return false
+}
+
+func GetSelector(name string) string {
+	_, exist := DataMap[name]
+
+	if !exist {
+		fmt.Println("Key does not exist")
+	}
+	return DataMap[name].CSSselectors.JobTitle
 }

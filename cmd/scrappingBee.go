@@ -10,25 +10,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type PageDetails struct {
-	Url         string
-	CSSselector string
-	Directory   string
-}
-
-type FilePaths struct {
+type PageData struct {
 	HTML string
 	CSV  string
-}
-
-func GenerateCSVPath(name string) string {
-	return fmt.Sprintf("files/%s/%s.csv", name, name)
+	Name string
 }
 
 //	 Using scrapingBee api function encodes page addres and save its HTML to separate directory
 //		name: name of scrapped page, needed for directories and files creation
 //		addr: address of scrapped page
-func ScrapPage(name, addr string) FilePaths {
+func ScrapPage(name, addr string) PageData {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("error occured during .env file loading")
@@ -66,8 +57,9 @@ func ScrapPage(name, addr string) FilePaths {
 
 	defer response.Body.Close()
 
-	return FilePaths{
+	return PageData{
 		HTML: fmt.Sprintf("files/%s/%s.html", name, name),
 		CSV:  fmt.Sprintf("files/%s/%s.csv", name, name),
+		Name: name,
 	}
 }
